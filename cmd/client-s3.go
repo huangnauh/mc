@@ -951,7 +951,29 @@ func (c *S3Client) Copy(ctx context.Context, source string, opts CopyOptions, pr
 	if opts.disableMultipart || opts.size < 64*1024*1024 {
 		_, e = c.api.CopyObject(ctx, destOpts, srcOpts)
 	} else {
-		_, e = c.api.ComposeObject(ctx, destOpts, srcOpts)
+		partsCount, partSize, lastPartSize, e := minio.OptimalPartInfo(opts.size, 0)
+		if e != nil {
+			panic(e)
+		}
+		srcs := make([]minio.CopySrcOptions, partsCount, partsCount)
+		for i := 0; i < partsCount; i++ {
+			var end int64
+			if i < partsCount-1 {
+				end = partSize*int64(i+1) - 1
+			} else {
+				end = partSize*int64(i) + lastPartSize - 1
+			}
+			srcs[i] = minio.CopySrcOptions{
+				Bucket:     srcOpts.Bucket,
+				Object:     srcOpts.Object,
+				Encryption: srcOpts.Encryption,
+				VersionID:  srcOpts.VersionID,
+				MatchRange: true,
+				Start:      partSize * int64(i),
+				End:        end,
+			}
+		}
+		_, e = c.api.ComposeObject(ctx, destOpts, srcs...)
 	}
 
 	if e != nil {
