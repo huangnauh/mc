@@ -1,15 +1,5 @@
-project_name: mc
-
-release:
-   name_template: "Version {{.Version}}"
-   disable: true
-   github:
-    owner: minio
-    name: mc
-
 env:
   - CGO_ENABLED=0
-  - GO111MODULE=on
 
 before:
   hooks:
@@ -87,39 +77,9 @@ nfpms:
     formats:
       - deb
       - rpm
-    overrides:
-      deb:
-        file_name_template: "{{ .Binary }}-release/debs/{{ .ProjectName }}-{{ .Version }}_{{ .Arch }}"
-        replacements:
-          arm: armv7
-        files:
-          "NOTICE": "/usr/share/mc/NOTICE"
-          "CREDITS": "/usr/share/mc/CREDITS"
-          "LICENSE": "/usr/share/mc/LICENSE"
-          "README.md": "/usr/share/mc/README.md"
-      rpm:
-        file_name_template: "{{ .Binary }}-release/rpms/{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}"
-        replacements:
-          amd64: x86_64
-          arm64: aarch64
-          arm: armv7
-        files:
-          "NOTICE": "/usr/share/mc/NOTICE"
-          "CREDITS": "/usr/share/mc/CREDITS"
-          "LICENSE": "/usr/share/mc/LICENSE"
-          "README.md": "/usr/share/mc/README.md"
-
 checksum:
   algorithm: sha256
 
-signs:
-  -
-    signature: "${artifact}.asc"
-    cmd: "sh"
-    args:
-      - '-c'
-      - 'gpg --quiet --detach-sign -a ${artifact}'
-    artifacts: all
 
 changelog:
   sort: asc
@@ -127,41 +87,3 @@ changelog:
     exclude:
       - '^Update yaml files'
 
-dockers:
-  -
-    goos: linux
-    goarch: amd64
-    dockerfile: Dockerfile.release
-    image_templates:
-      - minio/mc:{{ .Tag }}
-      - minio/mc:latest
-
-  -
-    goos: linux
-    goarch: ppc64le
-    dockerfile: Dockerfile.ppc64le.release
-    image_templates:
-      - minio/mc:{{ .Tag }}-ppc64le
-
-  -
-    goos: linux
-    goarch: s390x
-    dockerfile: Dockerfile.s390x.release
-    image_templates:
-      - minio/mc:{{ .Tag }}-s390x
-
-  -
-    goos: linux
-    goarch: arm64
-    goarm: ''
-    dockerfile: Dockerfile.arm64.release
-    image_templates:
-      - minio/mc:{{ .Tag }}-arm64
-
-  -
-    goos: linux
-    goarch: arm
-    goarm: '7'
-    dockerfile: Dockerfile.arm.release
-    image_templates:
-      - minio/mc:{{ .Tag }}-arm
