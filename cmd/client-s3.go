@@ -170,8 +170,12 @@ func newFactory() func(config *Config) (Client, *probe.Error) {
 			if config.Transport != nil {
 				transport = config.Transport
 			} else {
+				proxy := http.ProxyFromEnvironment
+				if config.DisableProxy {
+					proxy = nil
+				}
 				tr := &http.Transport{
-					Proxy:                 http.ProxyFromEnvironment,
+					Proxy:                 proxy,
 					DialContext:           newCustomDialContext(config),
 					MaxIdleConnsPerHost:   1024,
 					WriteBufferSize:       32 << 10, // 32KiB moving up from 4KiB default

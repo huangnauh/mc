@@ -225,6 +225,7 @@ type Config struct {
 	AppVersion        string
 	Debug             bool
 	Insecure          bool
+	DisableProxy      bool
 	Lookup            minio.BucketLookupType
 	ConnReadDeadline  time.Duration
 	ConnWriteDeadline time.Duration
